@@ -37,3 +37,10 @@ mybatis-plus:
 logging:
   level:
     com.atguigu.gmall.pms: debug
+seata:
+  tx-service-group: gmall_tx_group
+  service:
+    vgroup-mapping:
+      gmall_tx_group: default
+    grouplist:
+      default: localhost:8091
