@@ -10,9 +10,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.atguigu</groupId>
-    <artifactId>gmall</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+
+
     <description>谷粒商城</description>
     <packaging>pom</packaging>
 
@@ -20,6 +19,8 @@
         <module>gmall-admin</module>
         <module>gmall-common</module>
         <module>gmall-sms-interface</module>
+        <module>gmall-pms-interface</module>
+        <module>gmall-wms-interface</module>
     </modules>
 
     <properties>
