@@ -14,6 +14,7 @@ import com.atguigu.gmall.sms.vo.SkuSaleVO;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import io.seata.spring.annotation.GlobalTransactional;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,9 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, SpuEntity> implements
     private SkuAttrValueService skuAttrValueService;
     @Autowired
     private GmallSmsClient smsClient;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public PageResultVo queryPage(PageParamVo paramVo) {
@@ -121,7 +125,7 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, SpuEntity> implements
             BeanUtils.copyProperties(skuVo,skuEntity);
             // 品牌和分类的id需要从spuInfo中获取
             skuEntity.setBrandId(spuVo.getBrandId());
-            skuEntity.setCategoryId(skuVo.getCategoryId());
+            skuEntity.setCategoryId(spuVo.getCategoryId());
             //获取图片列表
             List<String> images = skuVo.getImages();
             // 如果图片列表不为null，则设置默认图片
@@ -166,6 +170,10 @@ public class SpuServiceImpl extends ServiceImpl<SpuMapper, SpuEntity> implements
             // 3.3. 数量折扣
 
         });
+        this.rabbitTemplate.convertAndSend("PMS.SPU.EXCHANGE","item.insert",spuId);
+
+
+
        // int i = 1/0;
     }
 

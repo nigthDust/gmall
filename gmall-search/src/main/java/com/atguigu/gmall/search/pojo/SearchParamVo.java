@@ -10,7 +10,7 @@ import java.util.List;
  *
  */
 @Data
-public class SearchParamVo {
+public class  SearchParamVo {
 
     private String keyword; // 检索条件
 

@@ -23,6 +23,19 @@ spring:
       uris: http://192.168.198.88:9200
   jackson:
     default-property-inclusion: non_null
+  thymeleaf:
+    cache: false
+  rabbitmq:
+    host: 192.168.198.88
+    port: 5672
+    virtual-host: /lyc
+    username: lyc
+    password: 123
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 1
+        concurrency: 6
 feign:
   sentinel:
     enabled: true

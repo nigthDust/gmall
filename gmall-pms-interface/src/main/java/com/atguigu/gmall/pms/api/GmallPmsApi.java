@@ -15,6 +15,8 @@ public interface GmallPmsApi {
 
 //    @PostMapping("pms/spu/page")
 //    public ResponseVo<List<SpuEntity>> querySpusByPage(@RequestBody PageParamVo pageParamVo);
+    @GetMapping("pms/spu/{id}")
+    ResponseVo<SpuEntity> querySpuById(@PathVariable("id") Long id);
 
     @GetMapping("pms/sku/spu/{spuId}")
     ResponseVo<List<SkuEntity>> querySkusBySpuId(@PathVariable("spuId")Long spuId);
@@ -43,4 +45,12 @@ public interface GmallPmsApi {
             @PathVariable("cid")Long cid,
             @RequestParam("spuId")Long spuId
     );
+
+    @GetMapping("pms/category/parent/{parentId}")
+    ResponseVo<List<CategoryEntity>> queryCategory(@PathVariable("parentId")Long parentId);
+
+    @GetMapping("pms/category/level23/{pid}")
+    ResponseVo<List<CategoryEntity>> queryLevel23CategoriesByPid(@PathVariable("pid")Long pid);
+
+
 }
