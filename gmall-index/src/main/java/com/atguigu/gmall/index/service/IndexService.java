@@ -2,10 +2,13 @@ package com.atguigu.gmall.index.service;
 
 import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall.common.bean.ResponseVo;
+import com.atguigu.gmall.index.config.RedissonConfig;
 import com.atguigu.gmall.index.feign.GmallPmsClient;
 import com.atguigu.gmall.pms.entity.CategoryEntity;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -23,8 +26,11 @@ public class IndexService {
     private GmallPmsClient pmsClient;
     @Autowired
     private StringRedisTemplate redisTemplate;
+    @Autowired
+    private RedissonClient redissonClient;
 
     private  static final String KEY_PREFIX="index:cates";
+    private  static final String LOCK_PREFIX="index:cates:lock:";
 
     public List<CategoryEntity> queryLvl1Cateogries() {
         ResponseVo<List<CategoryEntity>> responseVo = this.pmsClient.queryCategory(0L);
@@ -38,23 +44,35 @@ public class IndexService {
         if (StringUtils.isBlank(json)){
             return JSON.parseArray(json,CategoryEntity.class);
         }
+        //为了防止缓存击穿，添加分布式锁
+        RLock fairLock = this.redissonClient.getFairLock(LOCK_PREFIX + pid);
+        fairLock.lock();
 
+        try {
+            //当前请求等待获取锁的过程中，可能有其他请求获取了锁，并把数据放入了缓存，所以此时可以在查询一次缓存，如果缓存命中则直接返回
+            String json2 = this.redisTemplate.opsForValue().get(KEY_PREFIX + pid);
+            if (StringUtils.isBlank(json2)){
+                return JSON.parseArray(json2, CategoryEntity.class);
+            }
 
-        ResponseVo<List<CategoryEntity>> responseVo = this.pmsClient.queryLevel23CategoriesByPid(pid);
-        List<CategoryEntity> categoryEntities = responseVo.getData();
-        if (CollectionUtils.isEmpty(categoryEntities)){
-            // 为了防止缓存穿透，数据即使为null也缓存，缓存时间5min
-            this.redisTemplate.opsForValue().set(KEY_PREFIX+pid,JSON.toJSONString(categoryEntities),5,TimeUnit.MINUTES);
-        }else {
-            //为了防止缓存雪崩，给缓存时间添加随机值
-            this.redisTemplate.opsForValue().set(KEY_PREFIX+pid,JSON.toJSONString(categoryEntities),90+new Random().nextInt(10),TimeUnit.DAYS);
+            ResponseVo<List<CategoryEntity>> responseVo = this.pmsClient.queryLevel23CategoriesByPid(pid);
+            List<CategoryEntity> categoryEntities = responseVo.getData();
+            if (CollectionUtils.isEmpty(categoryEntities)){
+                // 为了防止缓存穿透，数据即使为null也缓存，缓存时间5min
+                this.redisTemplate.opsForValue().set(KEY_PREFIX+pid,JSON.toJSONString(categoryEntities),5,TimeUnit.MINUTES);
+            }else {
+                //为了防止缓存雪崩，给缓存时间添加随机值
+                this.redisTemplate.opsForValue().set(KEY_PREFIX+pid,JSON.toJSONString(categoryEntities),90+new Random().nextInt(10),TimeUnit.DAYS);
+            }
+
+            return categoryEntities;
+        } finally {
+            fairLock.unlock();
         }
-
-        return categoryEntities;
     }
 
 
-    public synchronized void testLock() {
+    public synchronized void testLock2() {
         //加锁
         String uuid = UUID.randomUUID().toString();
         Boolean lock = this.redisTemplate.opsForValue().setIfAbsent("lock", uuid,3,TimeUnit.SECONDS);
@@ -62,7 +80,7 @@ public class IndexService {
             // 为了防止栈内存溢出，或者降低资源争抢，可以先睡一会在去重试
             try {
                 Thread.sleep(40);
-                this.testLock();
+                this.testLock2();
 
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -83,7 +101,7 @@ public class IndexService {
                     "else " +
                     " return 0 " +
                     "end";
-            this.redisTemplate.execute(new DefaultRedisScript<>(script,Boolean.class), Arrays.asList("lock"),uuid);
+            this.redisTemplate.execute(new DefaultRedisScript<>(script,Boolean.class), Arrays.asList("lock"),uuid );
 
 
 
@@ -94,5 +112,22 @@ public class IndexService {
 //            }
 
         }
+    }
+
+    public void testLock() {
+        RLock lock = this.redissonClient.getLock("lock");
+        lock.lock();
+        try {
+            String number = this.redisTemplate.opsForValue().get("number");
+            if (StringUtils.isBlank(number)){
+                this.redisTemplate.opsForValue().set("number","1");
+                return;
+            }
+            int num = Integer.parseInt(number);
+            this.redisTemplate.opsForValue().set("number",String.valueOf(++num));
+        }finally {
+            lock.unlock();
+        }
+
     }
 }
