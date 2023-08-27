@@ -45,5 +45,8 @@ spring:
           uri: lb://index-service
           predicates:
             - Path=/index/**
-
+        - id: item-route  # 同步请求的路由
+          uri: lb://item-service
+          predicates:
+            - Host=item.gmall.com
 

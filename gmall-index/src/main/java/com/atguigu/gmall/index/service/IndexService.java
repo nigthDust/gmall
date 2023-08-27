@@ -2,8 +2,10 @@ package com.atguigu.gmall.index.service;
 
 import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall.common.bean.ResponseVo;
+import com.atguigu.gmall.index.annotation.GmallCache;
 import com.atguigu.gmall.index.config.RedissonConfig;
 import com.atguigu.gmall.index.feign.GmallPmsClient;
+import com.atguigu.gmall.index.utils.DistributedLock;
 import com.atguigu.gmall.pms.entity.CategoryEntity;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +30,8 @@ public class IndexService {
     private StringRedisTemplate redisTemplate;
     @Autowired
     private RedissonClient redissonClient;
-
+    @Autowired
+    private DistributedLock distributedLock;
     private  static final String KEY_PREFIX="index:cates";
     private  static final String LOCK_PREFIX="index:cates:lock:";
 
@@ -38,7 +41,15 @@ public class IndexService {
     }
 
 
+    @GmallCache(prefix = KEY_PREFIX,timeout = 129600,random = 14400,lock = LOCK_PREFIX)
     public List<CategoryEntity> queryLvl23CategoriesByPid(Long pid) {
+            ResponseVo<List<CategoryEntity>> responseVo = this.pmsClient.queryLevel23CategoriesByPid(pid);
+            System.out.println("===============目标方法");
+            return responseVo.getData();
+    }
+
+
+    public List<CategoryEntity> queryLvl23CategoriesByPid1(Long pid) {
         //先查询缓存，如果缓存命中则直接返回
         String json = this.redisTemplate.opsForValue().get(KEY_PREFIX + pid);
         if (StringUtils.isBlank(json)){

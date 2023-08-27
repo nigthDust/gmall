@@ -6,4 +6,19 @@
         from pms_sku_attr_value a INNER JOIN pms_attr b on a.attr_id=b.id
         where a.sku_id=#{skuId} and b.search_type=1
     </select>
+
+    <select id="queryMappingBySkuIds" resultType="Map">
+        select sku_id,GROUP_CONCAT(attr_value ORDER BY attr_id) as attr_values
+        from pms_sku_attr_value
+        <where>
+            and sku_id in
+            <foreach collection="skuIds" item="skuId" separator="," open="(" close=")">
+                #{skuId}
+            </foreach>
+        </where>
+        GROUP BY sku_id
+    </select>
+
+    <select id="queryMappingBySpuId" resultType="java.util.Map">
+    </select>
 </mapper>
