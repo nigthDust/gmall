@@ -50,3 +50,11 @@ spring:
           predicates:
             - Host=item.gmall.com
 
+        - id: auth-route  # 同步请求的路由
+          uri: lb://auth-service
+          predicates:
+            - Host=sso.gmall.com
+jwt:
+  pubKeyPath: E:\atguigu\20230309-java(sh)\Code\gmall\rsa\rsa.pub
+  cookieName: GMALL-TOKEN
+  token: token

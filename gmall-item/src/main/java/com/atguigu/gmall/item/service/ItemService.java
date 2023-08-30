@@ -14,8 +14,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
@@ -34,6 +37,9 @@ public class ItemService {
 
    @Autowired
    private ExecutorService executorService;
+
+   @Autowired
+   private TemplateEngine templateEngine;
 
 
     public ItemVo loadData(Long skuId) {
@@ -157,6 +163,23 @@ public class ItemService {
 
         CompletableFuture.allOf(categoryFuture, brandFuture, spuFuture, imagesFuture, salesFuture, wareSkuFuture,
                 saleAttrsFuture, saleAttrFuture, mappingFuture, descFuture, groupFuture).join();
+        executorService.execute(()->{
+                generateHtml(itemVo);
+        });
         return itemVo;
+    }
+
+    private void generateHtml(ItemVo itemVo){
+        //通过文件流吧静态文件保存到硬盘
+        try (PrintWriter printWriter = new PrintWriter("E:\\atguigu\\20230309-java(sh)\\Code\\gmall\\html\\" + itemVo.getSkuId() +".html");){
+            //上下文对象
+            Context context = new Context();
+            //通过上下文对象给模版传递数据
+            context.setVariable("itemVo",itemVo);
+            //执行页面静态化方法
+            this.templateEngine.process("item",context,printWriter);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

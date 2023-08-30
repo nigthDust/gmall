@@ -2,25 +2,25 @@ package com.atguigu.gmall.ums.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
- * 关注店铺表
+ * 关注商品表
  * 
  * @author lyc
  * @email lyc@atguigu.com
  * @date 2023-08-10 09:50:53
  */
 @Data
-@TableName("ums_user_collect_shop")
-public class UserCollectShopEntity implements Serializable {
+@TableName("ums_user_collect_sku")
+public class UserCollectSkuEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 
+	 * id
 	 */
 	@TableId
 	private Long id;
@@ -29,20 +29,20 @@ public class UserCollectShopEntity implements Serializable {
 	 */
 	private Long userId;
 	/**
-	 * 店铺id
+	 * sku_id
 	 */
-	private Long shopId;
+	private Long skuId;
 	/**
-	 * 店铺名
+	 * sku标题
 	 */
-	private String shopName;
+	private String skuTitle;
 	/**
-	 * 店铺logo
+	 * sku默认图片
 	 */
-	private String shopLogo;
+	private String skuImage;
 	/**
-	 * 关注时间
+	 * 创建时间
 	 */
-	private Date createtime;
+	private Date createTime;
 
 }
