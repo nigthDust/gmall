@@ -39,6 +39,17 @@ spring:
       shutdown:
         await-termination: true
         await-termination-period: 60s
+  rabbitmq:
+    host: 192.168.198.88
+    port: 5672
+    virtual-host: /lyc
+    username: lyc
+    password: 123
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 1
+        concurrency: 6
 feign:
   sentinel:
     enabled: true

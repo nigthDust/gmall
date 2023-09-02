@@ -45,6 +45,7 @@ public class CartService {
     private GmallWmsClient gmallWmsClient;
 
     private static final  String KEY_PREFIX = "cart:info:";
+    private static final String PRICE_PREFIX ="cart:price:";
 
 
     public void saveCart(Cart cart) {
@@ -89,7 +90,9 @@ public class CartService {
             List<ItemSaleVo> itemSaleVos = salesResponseVo.getData();
             cart.setSales(JSON.toJSONString(itemSaleVos));
             //保存到redis和mysql
-            this.asyncService.insertCart(cart);
+            //加入购物车时，同步加入了实时价格缓存，即使这条缓存数据存在，也可以进行设置，相当于同步方式同步了价格
+            this.redisTemplate.opsForValue().set(PRICE_PREFIX + skuId,skuEntity.getPrice().toString());
+            this.asyncService.insertCart(userId,cart);
         }
         hashOps.put(skuId,JSON.toJSONString(cart));
     }
@@ -124,6 +127,7 @@ public class CartService {
         if (!CollectionUtils.isEmpty(unloginCartJsons)){
             unloginCarts = unloginCartJsons.stream().map(cartJson ->{
                 Cart cart = JSON.parseObject(cartJson.toString(), Cart.class);
+                cart.setCurrentPrice(new BigDecimal(this.redisTemplate.opsForValue().get(PRICE_PREFIX + cart.getSkuId())));
                 return cart;
             }).collect(Collectors.toList());
         }
@@ -150,7 +154,7 @@ public class CartService {
                     //新增记录
                     cart.setId(null);
                     cart.setUserId(userId.toString());
-                    this.asyncService.insertCart(cart);
+                    this.asyncService.insertCart(userId.toString(),cart);
                 }
                 loginHashOps.put(skuId,JSON.toJSONString(cart));
             });
@@ -163,10 +167,47 @@ public class CartService {
         if (!CollectionUtils.isEmpty(loginCartJsons)){
             return loginCartJsons.stream().map(cartJson->{
                 Cart cart =JSON.parseObject(cartJson.toString(),Cart.class);
+                cart.setCurrentPrice(new BigDecimal(this.redisTemplate.opsForValue().get(PRICE_PREFIX+cart.getSkuId())));
                 return cart;
             }).collect(Collectors.toList());
         }
         return null;
 
+    }
+
+    public void updateNum(Cart cart) {
+        String userId = getUserId();
+        BoundHashOperations<String, Object, Object> hashOps = this.redisTemplate.boundHashOps(KEY_PREFIX + userId);
+       if (hashOps.hasKey(cart.getSkuId().toString())){
+           String cartJson = hashOps.get(cart.getSkuId().toString()).toString();
+           BigDecimal count = cart.getCount();   //要更新的数量
+           cart = JSON.parseObject(cartJson, Cart.class);
+           cart.setCount(count);
+
+           hashOps.put(cart.getSkuId().toString(),JSON.toJSONString(cart));
+           this.asyncService.updateCart(userId,cart.getSkuId().toString(),cart);
+       }
+
+
+
+    }
+    public void upddateStatus(Cart cart) {
+        String userId = getUserId();
+        BoundHashOperations<String, Object, Object> hashOps = this.redisTemplate.boundHashOps(KEY_PREFIX + userId);
+        if (hashOps.hasKey(cart.getSkuId().toString())){
+            String cartJson = hashOps.get(cart.getSkuId().toString()).toString();
+            Boolean check = cart.getCheck();//要更新的状态
+            cart = JSON.parseObject(cartJson, Cart.class);
+            cart.setCheck(check);
+            hashOps.put(cart.getSkuId().toString(),JSON.toJSONString(cart));
+            this.asyncService.updateCart(userId,cart.getSkuId().toString(),cart);
+        }
+    }
+
+    public void deleteCart(Long skuId) {
+        String userId = getUserId();
+        BoundHashOperations<String, Object, Object> hashOps = this.redisTemplate.boundHashOps(KEY_PREFIX + userId);
+        hashOps.delete(skuId.toString());
+        this.asyncService.deleteByUserIdAndSkuId(userId,skuId);
     }
 }

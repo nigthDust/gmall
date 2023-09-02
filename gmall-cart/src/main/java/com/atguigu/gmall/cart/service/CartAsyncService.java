@@ -17,11 +17,17 @@ public class CartAsyncService {
         this.cartMapper.update(cart,new UpdateWrapper<Cart>().eq("user_id",userId).eq("sku_Id",skuId));
     }
     @Async
-    public void insertCart(Cart cart){
+    public void insertCart(String userId,Cart cart){
         this.cartMapper.insert(cart);
     }
     @Async
     public void deleteByUserId(String userId){
         this.cartMapper.delete(new UpdateWrapper<Cart>().eq("user_id",userId));
+    }
+
+
+    @Async
+    public void deleteByUserIdAndSkuId(String userId, Long skuId) {
+          this.cartMapper.delete(new UpdateWrapper<Cart>().eq("user_id",userId).eq("sku_id",skuId));
     }
 }
