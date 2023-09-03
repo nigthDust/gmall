@@ -59,6 +59,13 @@ spring:
           uri: lb://cart-service
           predicates:
             - Host=cart.gmall.com
+
+        - id: order-route  # 同步请求的路由
+          uri: lb://order-service
+          predicates:
+            - Host=order.gmall.com
+          filters:
+            - Auth=/
 jwt:
   pubKeyPath: E:\atguigu\20230309-java(sh)\Code\gmall\rsa\rsa.pub
   cookieName: GMALL-TOKEN

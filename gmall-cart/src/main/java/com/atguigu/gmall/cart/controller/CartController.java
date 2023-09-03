@@ -22,6 +22,14 @@ public class CartController {
     private CartService cartService;
 
 
+    @GetMapping("user/{userId}")
+    @ResponseBody
+    public ResponseVo<List<Cart>> queryCheckedCartsByUserId(@PathVariable("userId")Long userId){
+        List<Cart> carts = this.cartService.queryCheckedCartsByUserId(userId);
+        return ResponseVo.ok(carts);
+    }
+
+
     @PostMapping("updateNum")
     @ResponseBody
     public ResponseVo updateNum(@RequestBody Cart cart){

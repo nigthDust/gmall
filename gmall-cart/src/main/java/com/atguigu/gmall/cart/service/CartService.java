@@ -210,4 +210,16 @@ public class CartService {
         hashOps.delete(skuId.toString());
         this.asyncService.deleteByUserIdAndSkuId(userId,skuId);
     }
+
+    public List<Cart> queryCheckedCartsByUserId(Long userId) {
+        // TODO: 应该吧userKey从order传递过来，先获取未登录的购物车然后合并到已登录的购物车中去，最后吧未登录的购物车清空
+        //根据userId查询已选中的购物车记录
+        BoundHashOperations<String, Object, Object> hashOps = this.redisTemplate.boundHashOps(KEY_PREFIX + userId);
+        List<Object> cartJsons = hashOps.values();
+        if (CollectionUtils.isEmpty(cartJsons)){
+            return null;
+        }
+        return  cartJsons.stream().map(cartJson ->
+            JSON.parseObject(cartJson.toString(),Cart.class)).filter(Cart::getCheck).collect(Collectors.toList());
+    }
 }

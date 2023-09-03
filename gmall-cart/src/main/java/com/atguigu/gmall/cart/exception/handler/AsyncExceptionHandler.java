@@ -18,7 +18,7 @@ public class AsyncExceptionHandler implements AsyncUncaughtExceptionHandler {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    private static  final String EXCEPTION_KEY="cart:exception";
+    private static  final String EXCEPTION_KEY="car t:exception";
     @Override
     public void handleUncaughtException(Throwable ex, Method method, Object... params) {
        // log.error("异步任务出现了异常。方法：{}，异常信息：{}，参数：{}", method.getName(), ex.getMessage(), Arrays.asList(params));
