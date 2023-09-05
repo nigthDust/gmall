@@ -1,4 +1,4 @@
-package com.atguigu.gmall.order.pojo;
+ package com.atguigu.gmall.oms.vo;
 
 import com.atguigu.gmall.ums.entity.UserAddressEntity;
 import lombok.Data;

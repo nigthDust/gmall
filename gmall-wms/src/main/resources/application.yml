@@ -25,6 +25,19 @@ spring:
   redis:
     host: 192.168.198.88
     port: 6379
+  rabbitmq:
+    host: 192.168.198.88
+    port: 5672
+    virtual-host: /lyc
+    username: lyc
+    password: 123
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 1
+        concurrency: 6
+    publisher-returns: true
+    publisher-confirm-type: correlated
 feign:
   sentinel:
     enabled: true

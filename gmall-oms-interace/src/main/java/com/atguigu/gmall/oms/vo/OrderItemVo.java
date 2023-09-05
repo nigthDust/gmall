@@ -1,8 +1,7 @@
-package com.atguigu.gmall.order.pojo;
+package com.atguigu.gmall.oms.vo;
 
 import com.atguigu.gmall.pms.entity.SkuAttrValueEntity;
 import com.atguigu.gmall.sms.vo.ItemSaleVo;
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.math.BigDecimal;

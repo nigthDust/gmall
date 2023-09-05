@@ -1,5 +1,8 @@
 server:
   port: 18087
+  error:
+    include-exception: true
+    include-message: always
 spring:
   cloud:
     nacos:

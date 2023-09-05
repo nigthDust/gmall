@@ -2,6 +2,7 @@ package com.atguigu.gmall.oms.controller;
 
 import java.util.List;
 
+import com.atguigu.gmall.oms.vo.OrderSubmitVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,13 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+
+    @PostMapping("save/{userId}")
+    public ResponseVo saveOrder(@RequestBody OrderSubmitVo submitVo,@PathVariable("userId")Long userId){
+        this.orderService.saveOrder(submitVo,userId);
+        return ResponseVo.ok();
+
+    }
 
     /**
      * 列表

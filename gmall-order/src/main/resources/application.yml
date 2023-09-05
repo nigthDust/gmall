@@ -1,5 +1,8 @@
 server:
   port: 18092
+  error:
+    include-exception: true
+    include-message: always
 spring:
   cloud:
     nacos:
@@ -28,6 +31,8 @@ spring:
     virtual-host: /lyc
     username: lyc
     password: 123
+    publisher-confirm-type: correlated
+    publisher-returns: true
 feign:
   sentinel:
     enabled: true
