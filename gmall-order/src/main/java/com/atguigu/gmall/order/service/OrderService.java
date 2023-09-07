@@ -3,7 +3,7 @@ package com.atguigu.gmall.order.service;
 import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall.cart.pojo.Cart;
 import com.atguigu.gmall.common.bean.ResponseVo;
-import com.atguigu.gmall.order.controller.Interceptor.LoginInterceptor;
+import com.atguigu.gmall.order.Interceptor.LoginInterceptor;
 import com.atguigu.gmall.order.feign.*;
 import com.atguigu.gmall.order.pojo.OrderConfirmVo;
 import com.atguigu.gmall.oms.vo.OrderItemVo;

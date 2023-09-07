@@ -66,6 +66,19 @@ spring:
             - Host=order.gmall.com
           filters:
             - Auth=/
+
+        - id: payment-route  # 同步请求的路由
+          uri: lb://payment-service
+          predicates:
+            - Host=payment.gmall.com
+          filters:
+            - Auth=/
+
+        - id: payment-route2  # 同步请求的路由
+          uri: lb://payment-service
+          predicates:
+            - Path=/pay/**
+
 jwt:
   pubKeyPath: E:\atguigu\20230309-java(sh)\Code\gmall\rsa\rsa.pub
   cookieName: GMALL-TOKEN
